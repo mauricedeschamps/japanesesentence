@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>NIHONGO Builder | 日本語学習アプリ</title>
+  <title id="pageTitle">NIHONGO Builder | Japanese Learning App</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1e1e2f">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -52,6 +52,7 @@
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
+      margin: 0;
     }
     .toolbar {
       display: flex;
@@ -183,7 +184,7 @@
 <body>
 <div class="app-container">
   <header class="app-header">
-    <h1>📖 にほんごビルダー</h1>
+    <h1 id="appTitle">📖 NIHONGO Builder</h1>
     <div class="toolbar">
       <button id="themeToggleBtn" class="icon-btn">🌙 ダーク/Dark</button>
       <button id="langToggleBtn" class="icon-btn">🇬🇧 English / 日本語</button>
@@ -198,7 +199,7 @@
       <button id="speakBtn" class="speech-btn">🔊 音声を聞く / Listen</button>
     </div>
     <div class="feature-row">
-      <img src="https://placehold.co/400x120/FFF3E0/FF8C42?text=Learn+Japanese+with+buttons" alt="japanese illustration" class="demo-img">
+      <img src="https://placehold.co/400x120/FFF3E0/FF8C42?text=Learn+Japanese+with+buttons" alt="Japanese learning illustration" class="demo-img">
     </div>
   </main>
 
@@ -277,34 +278,37 @@
     nounAdjForQW: null,
     copulaMode: null
   };
-  let langMode = 'en';   // 'en' または 'ja'  初期は英語モード優先
+  let langMode = 'en';   // 'en' または 'ja'  初期は英語モード
   let darkTheme = true;
 
   const dynamicPanel = document.getElementById('dynamicPanel');
   const jpSentenceSpan = document.getElementById('jpSentence');
   const romajiSentenceSpan = document.getElementById('romajiSentence');
   const speakButton = document.getElementById('speakBtn');
+  const appTitle = document.getElementById('appTitle');
+  const pageTitle = document.getElementById('pageTitle');
+
+  // タイトルの更新
+  function updateTitles() {
+    if (langMode === 'en') {
+      appTitle.textContent = '📖 NIHONGO Builder';
+      pageTitle.textContent = 'NIHONGO Builder | Japanese Learning App';
+    } else {
+      appTitle.textContent = '📖 にほんごビルダー';
+      pageTitle.textContent = 'にほんごビルダー | 日本語学習アプリ';
+    }
+  }
 
   // ---------- ヘルパー: 表示用テキスト取得 (言語・項目に応じて) ----------
   function getDisplayText(item, type, particle = null) {
     if (!item) return "";
     if (langMode === 'en') {
-      // 英語モードでは英語メイン + 補助的に日本語(ローマ字)
       let main = item.en || item.jp;
       let sub = item.rom ? `(${item.rom})` : "";
-      let particleStr = "";
-      if (particle && type !== 'pronoun') {
-        particleStr = `-${particle}`;
-      }
       return `${main} ${sub}`.trim();
     } else {
-      // 日本語モード: 日本語 + ローマ字
       let main = item.jp;
       let sub = item.rom ? `(${item.rom})` : "";
-      let particleStr = "";
-      if (particle && type !== 'pronoun') {
-        particleStr = `-${particle}`;
-      }
       return `${main} ${sub}`.trim();
     }
   }
@@ -336,8 +340,8 @@
   function buildCurrentSentence() {
     let jp = "", rom = "";
     const s = currentState;
-    if (!s.pattern) return { jp: "👈 Choose sentence pattern", rom: "Select type first" };
-    if (!s.selectedPronoun) return { jp: "📌 Select a pronoun first", rom: "Choose pronoun" };
+    if (!s.pattern) return { jp: langMode === 'en' ? "👈 Choose sentence pattern" : "👈 文の型を選んでね", rom: "Select type first" };
+    if (!s.selectedPronoun) return { jp: langMode === 'en' ? "📌 Select a pronoun first" : "📌 代名詞を選んでください", rom: "Choose pronoun" };
     const pronoun = s.selectedPronoun;
     const pronounPart = `${pronoun.jp}-${pronoun.particle}`;
     const pronounRom = `${pronoun.rom}-${pronoun.particle === "は" ? "wa" : pronoun.particle}`;
@@ -352,7 +356,7 @@
       } else if (s.selectedCopulaNoun) {
         predicate = s.selectedCopulaNoun.jp;
         predRom = s.selectedCopulaNoun.rom;
-      } else return { jp: "Select adjective/noun", rom: "Choose predicate" };
+      } else return { jp: langMode === 'en' ? "Select adjective/noun" : "形容詞か名詞を選んで", rom: "Choose predicate" };
       if (isAdj) {
         let adj = predicate, adjRom = predRom;
         if (s.sentenceType === 'negative') {
@@ -387,20 +391,20 @@
       }
     }
 
-    // 動詞文 (他動詞 / 移動動詞)
+    // 動詞文
     if (s.pattern === 'verbObj') {
       const verb = s.selectedVerb;
-      if (!verb) return { jp: "Choose verb", rom: "Select verb" };
+      if (!verb) return { jp: langMode === 'en' ? "Choose verb" : "動詞を選んで", rom: "Select verb" };
       let objectPart = "", objectRom = "";
       if (verb.type === 'motion') {
         let place = s.selectedLocation;
-        if (!place) return { jp: "Choose location", rom: "Select location" };
+        if (!place) return { jp: langMode === 'en' ? "Choose location" : "場所を選んで", rom: "Select location" };
         let particle = verb.particle;
         objectPart = `${place.jp}-${particle}`;
         objectRom = `${place.rom}-${particle === "へ" ? "e" : particle}`;
       } else {
         let obj = s.selectedObjectNoun;
-        if (!obj) return { jp: "Choose object (noun)", rom: "Select object" };
+        if (!obj) return { jp: langMode === 'en' ? "Choose object (noun)" : "目的語(名詞)を選んで", rom: "Select object" };
         objectPart = `${obj.jp}-を`;
         objectRom = `${obj.rom}-o`;
       }
@@ -423,10 +427,10 @@
     // 疑問詞文
     if (s.pattern === 'questionWord') {
       const qw = s.selectedQuestionWord;
-      if (!qw) return { jp: "Choose question word", rom: "Select question word" };
+      if (!qw) return { jp: langMode === 'en' ? "Choose question word" : "疑問詞を選んで", rom: "Select question word" };
       let hasVerb = s.verbChosenForQW;
       let hasNounAdj = s.nounAdjForQW;
-      if (!hasVerb && !hasNounAdj) return { jp: "Choose verb or adj/noun", rom: "Select predicate" };
+      if (!hasVerb && !hasNounAdj) return { jp: langMode === 'en' ? "Choose verb or adj/noun" : "動詞か形容詞/名詞を選んで", rom: "Select predicate" };
       let predPart = "", predRom = "";
       let particle = "";
       if (hasVerb) {
@@ -649,17 +653,21 @@
     renderUI();
   }
 
-  // 言語切り替え
+  // 言語切り替え (タイトルも更新)
   document.getElementById('langToggleBtn').onclick = () => {
     langMode = (langMode === 'ja' ? 'en' : 'ja');
+    updateTitles();
     renderUI();
   };
   document.getElementById('themeToggleBtn').onclick = () => {
     darkTheme = !darkTheme;
     document.body.classList.toggle('dark', darkTheme);
   };
-  speakButton.onclick = () => { let txt = jpSentenceSpan.innerText; if(txt && !txt.includes("👈") && !txt.includes("Select")) speakJapaneseSentence(txt); };
+  speakButton.onclick = () => { let txt = jpSentenceSpan.innerText; if(txt && !txt.includes("👈") && !txt.includes("Select") && !txt.includes("選んで")) speakJapaneseSentence(txt); };
+  
+  // 初期化
   document.body.classList.add('dark');
+  updateTitles();
   resetState();
 
   // Service Worker 登録 (PWA)
