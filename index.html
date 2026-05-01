@@ -30,13 +30,11 @@
       color: #eef2ff;
     }
 
-    /* container */
     .app-container {
       max-width: 700px;
       margin: 0 auto;
     }
 
-    /* header */
     .app-header {
       padding: 1rem 0 0.5rem;
       display: flex;
@@ -75,7 +73,6 @@
     }
     .icon-btn:active { transform: scale(0.96); }
 
-    /* main panel */
     .builder-panel {
       background: rgba(255,255,245,0.95);
       border-radius: 2rem;
@@ -88,7 +85,6 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     }
 
-    /* 現在の文表示 */
     .sentence-area {
       background: #fff0dd;
       padding: 1rem;
@@ -123,7 +119,6 @@
     }
     body.dark .speech-btn { background: #cc7b2e; color: white; }
 
-    /* ボタングリッド */
     .buttons-grid {
       display: flex;
       flex-wrap: wrap;
@@ -155,7 +150,6 @@
     }
     body.dark .back-btn { background: #4a4a60; color: white; }
 
-    /* footer */
     .app-footer {
       text-align: center;
       padding: 1.5rem 0 0.5rem;
@@ -177,10 +171,6 @@
       margin: 1rem 0 0.5rem;
       flex-wrap: wrap;
     }
-    img {
-      max-width: 100%;
-      border-radius: 1rem;
-    }
     .demo-img {
       width: 100%;
       max-height: 120px;
@@ -195,22 +185,20 @@
   <header class="app-header">
     <h1>📖 にほんごビルダー</h1>
     <div class="toolbar">
-      <button id="themeToggleBtn" class="icon-btn">🌙 ダーク</button>
-      <button id="langToggleBtn" class="icon-btn">🇬🇧 English</button>
+      <button id="themeToggleBtn" class="icon-btn">🌙 ダーク/Dark</button>
+      <button id="langToggleBtn" class="icon-btn">🇬🇧 English / 日本語</button>
     </div>
   </header>
 
   <main>
-    <div class="builder-panel" id="dynamicPanel">
-      <!-- 動的にUIが挿入される -->
-    </div>
+    <div class="builder-panel" id="dynamicPanel"></div>
     <div class="sentence-area" id="sentenceArea">
       <div class="jp-sentence" id="jpSentence">✨ 文章がここに表示</div>
       <div class="romaji-sentence" id="romajiSentence">✨ Build a sentence!</div>
       <button id="speakBtn" class="speech-btn">🔊 音声を聞く / Listen</button>
     </div>
     <div class="feature-row">
-      <img src="https://placehold.co/400x120/FFF3E0/FF8C42?text=Japanese+Learning" alt="japanese illustration" class="demo-img" style="background:#ffeedd;">
+      <img src="https://placehold.co/400x120/FFF3E0/FF8C42?text=Learn+Japanese+with+buttons" alt="japanese illustration" class="demo-img">
     </div>
   </main>
 
@@ -221,63 +209,61 @@
 </div>
 
 <script>
-  // --------------------------------------------------------------
-  // DATA (pronouns, nouns, adjectives, verbs, question words)
-  // --------------------------------------------------------------
+  // ---------- データ定義 (日本語 + 英語 + ローマ字) ----------
   const PRONOUNS = [
-    { jp: "わたし", rom: "watashi", particle: "は" },
-    { jp: "あなた", rom: "anata", particle: "は" },
-    { jp: "かれ", rom: "kare", particle: "は" },
-    { jp: "かのじょ", rom: "kanojo", particle: "は" },
-    { jp: "わたしたち", rom: "watashitachi", particle: "は" }
+    { jp: "わたし", rom: "watashi", en: "I", particle: "は" },
+    { jp: "あなた", rom: "anata", en: "you", particle: "は" },
+    { jp: "かれ", rom: "kare", en: "he", particle: "は" },
+    { jp: "かのじょ", rom: "kanojo", en: "she", particle: "は" },
+    { jp: "わたしたち", rom: "watashitachi", en: "we", particle: "は" }
   ];
 
   const NOUNS = [
-    { jp: "りんご", rom: "ringo" }, { jp: "すし", rom: "sushi" }, { jp: "みず", rom: "mizu" },
-    { jp: "ほん", rom: "hon" }, { jp: "えいが", rom: "eiga" }, { jp: "おんがく", rom: "ongaku" },
-    { jp: "にほんご", rom: "nihongo" }, { jp: "しごと", rom: "shigoto" }, { jp: "くるま", rom: "kuruma" },
-    { jp: "おかね", rom: "okane" }, { jp: "ともだち", rom: "tomodachi" }
+    { jp: "りんご", rom: "ringo", en: "apple" }, { jp: "すし", rom: "sushi", en: "sushi" }, { jp: "みず", rom: "mizu", en: "water" },
+    { jp: "ほん", rom: "hon", en: "book" }, { jp: "えいが", rom: "eiga", en: "movie" }, { jp: "おんがく", rom: "ongaku", en: "music" },
+    { jp: "にほんご", rom: "nihongo", en: "Japanese" }, { jp: "しごと", rom: "shigoto", en: "work" }, { jp: "くるま", rom: "kuruma", en: "car" },
+    { jp: "おかね", rom: "okane", en: "money" }, { jp: "ともだち", rom: "tomodachi", en: "friend" }
   ];
 
   const ADJECTIVES = [
-    { jp: "おおきい", rom: "ookii" }, { jp: "ちいさい", rom: "chiisai" }, { jp: "あたらしい", rom: "atarashii" },
-    { jp: "ふるい", rom: "furui" }, { jp: "いい", rom: "ii" }, { jp: "わるい", rom: "warui" },
-    { jp: "たかい", rom: "takai" }, { jp: "やすい", rom: "yasui" }, { jp: "たのしい", rom: "tanoshii" },
-    { jp: "むずかしい", rom: "muzukashii" }, { jp: "おもしろい", rom: "omoshiroi" }, { jp: "うつくしい", rom: "utsukushii" }
+    { jp: "おおきい", rom: "ookii", en: "big" }, { jp: "ちいさい", rom: "chiisai", en: "small" }, { jp: "あたらしい", rom: "atarashii", en: "new" },
+    { jp: "ふるい", rom: "furui", en: "old" }, { jp: "いい", rom: "ii", en: "good" }, { jp: "わるい", rom: "warui", en: "bad" },
+    { jp: "たかい", rom: "takai", en: "expensive/high" }, { jp: "やすい", rom: "yasui", en: "cheap" }, { jp: "たのしい", rom: "tanoshii", en: "fun" },
+    { jp: "むずかしい", rom: "muzukashii", en: "difficult" }, { jp: "おもしろい", rom: "omoshiroi", en: "interesting" }, { jp: "うつくしい", rom: "utsukushii", en: "beautiful" }
   ];
 
   const VERBS = [
-    { jp: "たべる", rom: "taberu", type: "trans", baseMasu: "たべます", negMasu: "たべません", pastPlain: "たべた" },
-    { jp: "のむ", rom: "nomu", type: "trans", baseMasu: "のみます", negMasu: "のみません", pastPlain: "のんだ" },
-    { jp: "する", rom: "suru", type: "trans", baseMasu: "します", negMasu: "しません", pastPlain: "した" },
-    { jp: "はなす", rom: "hanasu", type: "trans", baseMasu: "はなします", negMasu: "はなしません", pastPlain: "はなした" },
-    { jp: "みる", rom: "miru", type: "trans", baseMasu: "みます", negMasu: "みません", pastPlain: "みた" },
-    { jp: "きく", rom: "kiku", type: "trans", baseMasu: "ききます", negMasu: "ききません", pastPlain: "きいた" },
-    { jp: "もっている", rom: "motteiru", type: "trans", baseMasu: "もっています", negMasu: "もっていません", pastPlain: "もっていた" },
-    { jp: "いく", rom: "iku", type: "motion", particle: "へ", baseMasu: "いきます", negMasu: "いきません" },
-    { jp: "くる", rom: "kuru", type: "motion", particle: "から", baseMasu: "きます", negMasu: "きません" },
-    { jp: "とまる", rom: "tomaru", type: "motion", particle: "に", baseMasu: "とまります", negMasu: "とまりません" }
+    { jp: "たべる", rom: "taberu", en: "eat", type: "trans", baseMasu: "たべます", negMasu: "たべません", baseMasuRom: "tabemasu", negMasuRom: "tabemasen" },
+    { jp: "のむ", rom: "nomu", en: "drink", type: "trans", baseMasu: "のみます", negMasu: "のみません", baseMasuRom: "nomimasu", negMasuRom: "nomimasen" },
+    { jp: "する", rom: "suru", en: "do", type: "trans", baseMasu: "します", negMasu: "しません", baseMasuRom: "shimasu", negMasuRom: "shimasen" },
+    { jp: "はなす", rom: "hanasu", en: "speak", type: "trans", baseMasu: "はなします", negMasu: "はなしません", baseMasuRom: "hanashimasu", negMasuRom: "hanashimasen" },
+    { jp: "みる", rom: "miru", en: "see/watch", type: "trans", baseMasu: "みます", negMasu: "みません", baseMasuRom: "mimasu", negMasuRom: "mimasen" },
+    { jp: "きく", rom: "kiku", en: "listen/ask", type: "trans", baseMasu: "ききます", negMasu: "ききません", baseMasuRom: "kikimasu", negMasuRom: "kikimasen" },
+    { jp: "もっている", rom: "motteiru", en: "have", type: "trans", baseMasu: "もっています", negMasu: "もっていません", baseMasuRom: "motteimasu", negMasuRom: "motteimasen" },
+    { jp: "いく", rom: "iku", en: "go", type: "motion", particle: "へ", baseMasu: "いきます", negMasu: "いきません", baseMasuRom: "ikimasu", negMasuRom: "ikimasen" },
+    { jp: "くる", rom: "kuru", en: "come", type: "motion", particle: "から", baseMasu: "きます", negMasu: "きません", baseMasuRom: "kimasu", negMasuRom: "kimasen" },
+    { jp: "とまる", rom: "tomaru", en: "stay", type: "motion", particle: "に", baseMasu: "とまります", negMasu: "とまりません", baseMasuRom: "tomarimasu", negMasuRom: "tomarimasen" }
   ];
 
   const LOCATIONS = [
-    { jp: "がっこう", rom: "gakkou" }, { jp: "えき", rom: "eki" }, { jp: "こうえん", rom: "kouen" },
-    { jp: "としょかん", rom: "toshokan" }, { jp: "にほん", rom: "nihon" }, { jp: "アメリカ", rom: "amerika" },
-    { jp: "ホテル", rom: "hoteru" }, { jp: "かいしゃ", rom: "kaisha" }
+    { jp: "がっこう", rom: "gakkou", en: "school" }, { jp: "えき", rom: "eki", en: "station" }, { jp: "こうえん", rom: "kouen", en: "park" },
+    { jp: "としょかん", rom: "toshokan", en: "library" }, { jp: "にほん", rom: "nihon", en: "Japan" }, { jp: "アメリカ", rom: "amerika", en: "USA" },
+    { jp: "ホテル", rom: "hoteru", en: "hotel" }, { jp: "かいしゃ", rom: "kaisha", en: "company" }
   ];
 
   const QUESTION_WORDS = [
-    { jp: "なに", rom: "nani", usedWith: "object", defaultPost: "を" },
-    { jp: "だれ", rom: "dare", usedWith: "subject", defaultPost: "が" },
-    { jp: "いつ", rom: "itsu", usedWith: "time", defaultPost: "に" },
-    { jp: "どこ", rom: "doko", usedWith: "place", defaultPost: "へ" },
-    { jp: "どのように", rom: "dounoyouni", usedWith: "manner", defaultPost: "" },
-    { jp: "なぜ", rom: "naze", usedWith: "reason", defaultPost: "" }
+    { jp: "なに", rom: "nani", en: "what", usedWith: "object", defaultPost: "を" },
+    { jp: "だれ", rom: "dare", en: "who", usedWith: "subject", defaultPost: "が" },
+    { jp: "いつ", rom: "itsu", en: "when", usedWith: "time", defaultPost: "に" },
+    { jp: "どこ", rom: "doko", en: "where", usedWith: "place", defaultPost: "へ" },
+    { jp: "どのように", rom: "dounoyouni", en: "how", usedWith: "manner", defaultPost: "" },
+    { jp: "なぜ", rom: "naze", en: "why", usedWith: "reason", defaultPost: "" }
   ];
 
-  // ---------- グローバルアプリ状態 ----------
+  // ---------- グローバル状態 ----------
   let currentState = {
-    step: 0,          // step machine
-    pattern: null,    // 'copula', 'verbObj', 'questionWord'
+    step: 0,
+    pattern: null,
     selectedPronoun: null,
     selectedVerb: null,
     selectedObjectNoun: null,
@@ -285,28 +271,57 @@
     selectedAdjective: null,
     selectedCopulaNoun: null,
     selectedQuestionWord: null,
-    sentenceType: null,   // 'affirmative', 'negative', 'interrogative'
-    needVerbForQW: false, // 疑問詞文で動詞を使うか
+    sentenceType: null,
+    needVerbForQW: false,
     verbChosenForQW: null,
-    nounAdjForQW: null
+    nounAdjForQW: null,
+    copulaMode: null
   };
-
-  let navStack = []; // 戻る用簡易スタック
-  let langMode = 'ja';   // 'ja' or 'en'
+  let langMode = 'en';   // 'en' または 'ja'  初期は英語モード優先
   let darkTheme = true;
 
-  // DOM elements
   const dynamicPanel = document.getElementById('dynamicPanel');
   const jpSentenceSpan = document.getElementById('jpSentence');
   const romajiSentenceSpan = document.getElementById('romajiSentence');
   const speakButton = document.getElementById('speakBtn');
 
-  // Helper: 日本語読み上げ用に「は」→「わ」、「へ」→「え」変換
+  // ---------- ヘルパー: 表示用テキスト取得 (言語・項目に応じて) ----------
+  function getDisplayText(item, type, particle = null) {
+    if (!item) return "";
+    if (langMode === 'en') {
+      // 英語モードでは英語メイン + 補助的に日本語(ローマ字)
+      let main = item.en || item.jp;
+      let sub = item.rom ? `(${item.rom})` : "";
+      let particleStr = "";
+      if (particle && type !== 'pronoun') {
+        particleStr = `-${particle}`;
+      }
+      return `${main} ${sub}`.trim();
+    } else {
+      // 日本語モード: 日本語 + ローマ字
+      let main = item.jp;
+      let sub = item.rom ? `(${item.rom})` : "";
+      let particleStr = "";
+      if (particle && type !== 'pronoun') {
+        particleStr = `-${particle}`;
+      }
+      return `${main} ${sub}`.trim();
+    }
+  }
+
+  function getPronounDisplay(pronoun) {
+    if (langMode === 'en') {
+      return `${pronoun.en} (${pronoun.jp}-${pronoun.particle === "は" ? "wa" : pronoun.particle})`;
+    } else {
+      return `${pronoun.jp}-${pronoun.particle} (${pronoun.rom}-${pronoun.particle === "は" ? "wa" : pronoun.particle})`;
+    }
+  }
+
+  // 読み上げ用ヘルパー
   function convertParticlesForSpeech(text) {
     return text.replace(/([^\s]+)は/g, (match, p1) => p1 + 'わ')
                .replace(/([^\s]+)へ/g, (match, p1) => p1 + 'え');
   }
-
   function speakJapaneseSentence(jpText) {
     if (!window.speechSynthesis) return;
     let utteranceText = convertParticlesForSpeech(jpText);
@@ -317,159 +332,151 @@
     window.speechSynthesis.speak(utterance);
   }
 
-  // 文生成コア関数
+  // 文生成 (日本語文とローマ字文)
   function buildCurrentSentence() {
     let jp = "", rom = "";
-    const state = currentState;
-    if (!state.pattern) {
-      jp = "👈 ボタンから文の型を選んでね";
-      rom = "Choose a sentence pattern";
-      return { jp, rom };
-    }
-    const pronoun = state.selectedPronoun;
-    if (!pronoun) {
-      jp = "📌 まず代名詞を選んでください";
-      rom = "Select a pronoun first";
-      return { jp, rom };
-    }
+    const s = currentState;
+    if (!s.pattern) return { jp: "👈 Choose sentence pattern", rom: "Select type first" };
+    if (!s.selectedPronoun) return { jp: "📌 Select a pronoun first", rom: "Choose pronoun" };
+    const pronoun = s.selectedPronoun;
     const pronounPart = `${pronoun.jp}-${pronoun.particle}`;
     const pronounRom = `${pronoun.rom}-${pronoun.particle === "は" ? "wa" : pronoun.particle}`;
 
-    // ---------- COPULA パターン (〜は〇〇です) ----------
-    if (state.pattern === 'copula') {
-      let predicate = "", predRom = "";
-      let isAdj = false;
-      if (state.selectedAdjective) {
-        predicate = state.selectedAdjective.jp;
-        predRom = state.selectedAdjective.rom;
+    // Copula 文
+    if (s.pattern === 'copula') {
+      let predicate = "", predRom = "", isAdj = false;
+      if (s.selectedAdjective) {
+        predicate = s.selectedAdjective.jp;
+        predRom = s.selectedAdjective.rom;
         isAdj = true;
-      } else if (state.selectedCopulaNoun) {
-        predicate = state.selectedCopulaNoun.jp;
-        predRom = state.selectedCopulaNoun.rom;
-      } else {
-        return { jp: "述語を選んでね", rom: "Choose adjective/noun" };
-      }
-      let copula = "です";
-      let copNeg = "ではありません";
-      let copRom = "desu";
-      let copNegRom = "dewa arimasen";
+      } else if (s.selectedCopulaNoun) {
+        predicate = s.selectedCopulaNoun.jp;
+        predRom = s.selectedCopulaNoun.rom;
+      } else return { jp: "Select adjective/noun", rom: "Choose predicate" };
       if (isAdj) {
-        if (state.sentenceType === 'negative') {
-          let adjStem = predicate.slice(0, -1);
-          if (predicate === "いい") adjStem = "よ";
-          predicate = adjStem + "くない";
-          predRom = predRom.slice(0, -1) + "kunai";
-          copula = "です";
-          copRom = "desu";
-        } else if (state.sentenceType === 'interrogative') {
-          copula = "ですか";
-          copRom = "desu ka";
+        let adj = predicate, adjRom = predRom;
+        if (s.sentenceType === 'negative') {
+          let stem = adj.slice(0, -1);
+          let romStem = adjRom.slice(0, -1);
+          if (adj === "いい") { stem = "よ"; romStem = "yo"; }
+          adj = stem + "くない";
+          adjRom = romStem + "kunai";
+          jp = `${pronounPart} ${adj} です`;
+          rom = `${pronounRom} ${adjRom} desu`;
+        } else if (s.sentenceType === 'interrogative') {
+          jp = `${pronounPart} ${adj} ですか`;
+          rom = `${pronounRom} ${adjRom} desu ka`;
         } else {
-          copula = "です";
-          copRom = "desu";
-        }
-        if (state.sentenceType === 'negative') {
-          jp = `${pronounPart} ${predicate} ${copula}`;
-          rom = `${pronounRom} ${predRom} ${copRom}`;
-        } else {
-          jp = `${pronounPart} ${predicate}${state.sentenceType === 'interrogative' ? 'ですか' : 'です'}`;
-          rom = `${pronounRom} ${predRom}${state.sentenceType === 'interrogative' ? ' desu ka' : ' desu'}`;
+          jp = `${pronounPart} ${adj} です`;
+          rom = `${pronounRom} ${adjRom} desu`;
         }
         return { jp, rom };
       } else {
-        if (state.sentenceType === 'negative') {
-          jp = `${pronounPart} ${predicate} ${copNeg}`;
-          rom = `${pronounRom} ${predRom} ${copNegRom}`;
-        } else if (state.sentenceType === 'interrogative') {
-          jp = `${pronounPart} ${predicate} ですか`;
-          rom = `${pronounRom} ${predRom} desu ka`;
+        let noun = predicate, nounRom = predRom;
+        if (s.sentenceType === 'negative') {
+          jp = `${pronounPart} ${noun} じゃないです`;
+          rom = `${pronounRom} ${nounRom} janai desu`;
+        } else if (s.sentenceType === 'interrogative') {
+          jp = `${pronounPart} ${noun} ですか`;
+          rom = `${pronounRom} ${nounRom} desu ka`;
         } else {
-          jp = `${pronounPart} ${predicate} です`;
-          rom = `${pronounRom} ${predRom} desu`;
+          jp = `${pronounPart} ${noun} です`;
+          rom = `${pronounRom} ${nounRom} desu`;
         }
-        if (state.sentenceType === 'negative') jp = `${pronounPart} ${predicate} じゃないです`;
         return { jp, rom };
       }
     }
 
-    // ---------- 他動詞 / 移動動詞パターン ----------
-    if (state.pattern === 'verbObj') {
-      const verb = state.selectedVerb;
-      if (!verb) return { jp: "動詞を選んでください", rom: "choose verb" };
+    // 動詞文 (他動詞 / 移動動詞)
+    if (s.pattern === 'verbObj') {
+      const verb = s.selectedVerb;
+      if (!verb) return { jp: "Choose verb", rom: "Select verb" };
       let objectPart = "", objectRom = "";
-      let post = "を";
       if (verb.type === 'motion') {
-        let place = state.selectedLocation;
-        if (!place) return { jp: "場所を選んでください", rom: "choose location" };
+        let place = s.selectedLocation;
+        if (!place) return { jp: "Choose location", rom: "Select location" };
         let particle = verb.particle;
         objectPart = `${place.jp}-${particle}`;
         objectRom = `${place.rom}-${particle === "へ" ? "e" : particle}`;
       } else {
-        let obj = state.selectedObjectNoun;
-        if (!obj) return { jp: "目的語（名詞）を選んでください", rom: "choose object" };
+        let obj = s.selectedObjectNoun;
+        if (!obj) return { jp: "Choose object (noun)", rom: "Select object" };
         objectPart = `${obj.jp}-を`;
         objectRom = `${obj.rom}-o`;
       }
-
-      let verbForm = "";
-      let verbRom = "";
-      if (state.sentenceType === 'negative') {
+      let verbForm = "", verbFormRom = "";
+      if (s.sentenceType === 'negative') {
         verbForm = verb.negMasu;
-        verbRom = verb.negMasu;
-      } else if (state.sentenceType === 'interrogative') {
+        verbFormRom = verb.negMasuRom;
+      } else if (s.sentenceType === 'interrogative') {
         verbForm = verb.baseMasu + "か";
-        verbRom = verb.baseMasu + " ka";
+        verbFormRom = verb.baseMasuRom + " ka";
       } else {
         verbForm = verb.baseMasu;
-        verbRom = verb.baseMasu;
+        verbFormRom = verb.baseMasuRom;
       }
-      const fullJp = `${pronounPart} ${objectPart} ${verbForm}`;
-      const fullRom = `${pronounRom} ${objectRom} ${verbRom}`;
-      return { jp: fullJp, rom: fullRom };
+      jp = `${pronounPart} ${objectPart} ${verbForm}`;
+      rom = `${pronounRom} ${objectRom} ${verbFormRom}`;
+      return { jp, rom };
     }
 
-    // ---------- 疑問代名詞パターン ----------
-    if (state.pattern === 'questionWord') {
-      const qw = state.selectedQuestionWord;
-      if (!qw) return { jp: "疑問詞を選んでください", rom: "choose question word" };
-      let hasVerb = state.verbChosenForQW;
-      let hasNounAdj = state.nounAdjForQW;
-      if (!hasVerb && !hasNounAdj) return { jp: "動詞 または 形容詞/名詞 を選んでください", rom: "choose verb or adj/noun" };
-
+    // 疑問詞文
+    if (s.pattern === 'questionWord') {
+      const qw = s.selectedQuestionWord;
+      if (!qw) return { jp: "Choose question word", rom: "Select question word" };
+      let hasVerb = s.verbChosenForQW;
+      let hasNounAdj = s.nounAdjForQW;
+      if (!hasVerb && !hasNounAdj) return { jp: "Choose verb or adj/noun", rom: "Select predicate" };
       let predPart = "", predRom = "";
-      let questionParticle = "";
+      let particle = "";
       if (hasVerb) {
         let verb = hasVerb;
-        if (qw.jp === "なに") questionParticle = "を";
-        else if (qw.jp === "どこ") questionParticle = "へ";
-        else if (qw.jp === "だれ") questionParticle = "が";
-        let verbForm = (state.sentenceType === 'negative' ? verb.negMasu : verb.baseMasu);
-        if (state.sentenceType === 'interrogative') verbForm = verb.baseMasu + "か";
-        predPart = `${questionParticle ? questionParticle+" " : ""}${verbForm}`;
-        predRom = predPart;
+        if (qw.jp === "なに") particle = "を";
+        else if (qw.jp === "どこ") particle = "へ";
+        else if (qw.jp === "だれ") particle = "が";
+        let verbForm = (s.sentenceType === 'negative' ? verb.negMasu : verb.baseMasu);
+        let verbRom = (s.sentenceType === 'negative' ? verb.negMasuRom : verb.baseMasuRom);
+        if (s.sentenceType === 'interrogative') {
+          verbForm = verb.baseMasu + "か";
+          verbRom = verb.baseMasuRom + " ka";
+        }
+        predPart = `${particle ? particle+" " : ""}${verbForm}`;
+        predRom = `${particle ? particle+" " : ""}${verbRom}`;
       } else if (hasNounAdj) {
         let item = hasNounAdj;
         let isAdj = ADJECTIVES.includes(item);
         if (isAdj) {
-          let adjForm = item.jp;
-          if (state.sentenceType === 'negative') {
-            let stem = adjForm.slice(0, -1);
-            if (adjForm === "いい") stem = "よ";
-            adjForm = stem + "くないです";
-          } else adjForm = adjForm + "です";
-          predPart = adjForm;
+          let adj = item.jp, adjRom = item.rom;
+          if (s.sentenceType === 'negative') {
+            let stem = adj.slice(0, -1);
+            let romStem = adjRom.slice(0, -1);
+            if (adj === "いい") { stem = "よ"; romStem = "yo"; }
+            adj = stem + "くないです";
+            adjRom = romStem + "kunaidesu";
+          } else {
+            adj = adj + "です";
+            adjRom = adjRom + "desu";
+          }
+          predPart = adj;
+          predRom = adjRom;
         } else {
-          let nounForm = item.jp + (state.sentenceType === 'negative' ? "じゃないです" : "です");
-          predPart = nounForm;
+          let noun = item.jp, nounRom = item.rom;
+          if (s.sentenceType === 'negative') {
+            predPart = noun + "じゃないです";
+            predRom = nounRom + "janaidesu";
+          } else {
+            predPart = noun + "です";
+            predRom = nounRom + "desu";
+          }
         }
       }
-      const qwDisplay = `${qw.jp}${questionParticle ? `-${questionParticle}` : ''}`;
-      const qwRom = `${qw.rom}${questionParticle ? `-${questionParticle === "へ" ? "e" : questionParticle}` : ''}`;
-      let jp = `${pronounPart} ${qwDisplay} ${predPart}`;
-      let rom = `${pronounRom} ${qwRom} ${predRom}`;
+      const qwDisplay = `${qw.jp}${particle ? `-${particle}` : ''}`;
+      const qwRom = `${qw.rom}${particle ? `-${particle === "へ" ? "e" : particle}` : ''}`;
+      jp = `${pronounPart} ${qwDisplay} ${predPart}`;
+      rom = `${pronounRom} ${qwRom} ${predRom}`;
       return { jp, rom };
     }
-    return { jp: "まだ文が作れていません", rom: "incomplete" };
+    return { jp: "Error", rom: "Error" };
   }
 
   function updateSentenceDisplay() {
@@ -478,93 +485,106 @@
     romajiSentenceSpan.innerText = rom;
   }
 
+  // ---------- UI レンダリング (英語対応版) ----------
   function renderUI() {
-    let html = `<div class="buttons-grid"><button id="backBtn" class="option-btn back-btn">🔙 戻る / Back</button>`;
-    const state = currentState;
-    if (state.step === 0) {
-      html += `<button data-action="pattern_copula" class="option-btn">📘 〜は〇〇です (noun/adj)</button>`;
-      html += `<button data-action="pattern_verb" class="option-btn">⚡ 〜は〜を動詞 (trans/motion)</button>`;
-      html += `<button data-action="pattern_qw" class="option-btn">❓ 疑問詞文 (〜は何・どこ～)</button>`;
+    let html = `<div class="buttons-grid"><button id="backBtn" class="option-btn back-btn">🔙 ${langMode === 'en' ? 'Back' : '戻る'}</button>`;
+    const s = currentState;
+
+    if (s.step === 0) {
+      html += `<button data-action="pattern_copula" class="option-btn">📘 ${langMode === 'en' ? 'Noun/Adjective + desu' : '〜は〇〇です'}</button>`;
+      html += `<button data-action="pattern_verb" class="option-btn">⚡ ${langMode === 'en' ? 'Verb (Transitive/Motion)' : '〜は〜を動詞'}</button>`;
+      html += `<button data-action="pattern_qw" class="option-btn">❓ ${langMode === 'en' ? 'Question Word (what/who/where...)' : '疑問詞文'}</button>`;
       html += `</div>`;
     }
-    else if (state.step === 1) {
+    else if (s.step === 1) {
       PRONOUNS.forEach(p => {
-        html += `<button data-select="pronoun" data-jp="${p.jp}" data-rom="${p.rom}" data-particle="${p.particle}" class="option-btn">${p.jp}-${p.particle}  (${p.rom}-${p.particle === "は" ? "wa" : p.particle})</button>`;
+        let display = getPronounDisplay(p);
+        html += `<button data-select="pronoun" data-jp="${p.jp}" data-rom="${p.rom}" data-en="${p.en}" data-particle="${p.particle}" class="option-btn">${display}</button>`;
       });
       html += `</div>`;
     }
-    else if (state.pattern === 'copula') {
-      if (state.step === 2) {
-        html += `<button data-copula-type="adj" class="option-btn">📗 形容詞 (i-adjective)</button>`;
-        html += `<button data-copula-type="noun" class="option-btn">📙 名詞 (noun)</button></div>`;
-      } else if (state.step === 3 && state.copulaMode === 'adj') {
+    else if (s.pattern === 'copula') {
+      if (s.step === 2) {
+        html += `<button data-copula-type="adj" class="option-btn">📗 ${langMode === 'en' ? 'Adjective (i-adjective)' : '形容詞'}</button>`;
+        html += `<button data-copula-type="noun" class="option-btn">📙 ${langMode === 'en' ? 'Noun' : '名詞'}</button></div>`;
+      } else if (s.step === 3 && s.copulaMode === 'adj') {
         ADJECTIVES.forEach(a => {
-          html += `<button data-select-adj="${a.jp}" data-rom="${a.rom}" class="option-btn">${a.jp} (${a.rom})</button>`;
+          let display = getDisplayText(a, 'adj');
+          html += `<button data-select-adj="${a.jp}" data-rom="${a.rom}" data-en="${a.en}" class="option-btn">${display}</button>`;
         });
         html += `</div>`;
-      } else if (state.step === 3 && state.copulaMode === 'noun') {
+      } else if (s.step === 3 && s.copulaMode === 'noun') {
         NOUNS.forEach(n => {
-          html += `<button data-select-noun="${n.jp}" data-rom="${n.rom}" class="option-btn">${n.jp} (${n.rom})</button>`;
+          let display = getDisplayText(n, 'noun');
+          html += `<button data-select-noun="${n.jp}" data-rom="${n.rom}" data-en="${n.en}" class="option-btn">${display}</button>`;
         });
         html += `</div>`;
-      } else if (state.step === 4) {
-        html += `<button data-sent-type="affirmative" class="option-btn">✅ 肯定 (Affirmative)</button>`;
-        html += `<button data-sent-type="negative" class="option-btn">❌ 否定 (Negative)</button>`;
-        html += `<button data-sent-type="interrogative" class="option-btn">❓ 疑問 (Interrogative)</button></div>`;
+      } else if (s.step === 4) {
+        html += `<button data-sent-type="affirmative" class="option-btn">✅ ${langMode === 'en' ? 'Affirmative' : '肯定'}</button>`;
+        html += `<button data-sent-type="negative" class="option-btn">❌ ${langMode === 'en' ? 'Negative' : '否定'}</button>`;
+        html += `<button data-sent-type="interrogative" class="option-btn">❓ ${langMode === 'en' ? 'Interrogative' : '疑問'}</button></div>`;
       }
     }
-    else if (state.pattern === 'verbObj') {
-      if (state.step === 2) {
+    else if (s.pattern === 'verbObj') {
+      if (s.step === 2) {
         VERBS.forEach(v => {
-          html += `<button data-select-verb='${JSON.stringify(v)}' class="option-btn">${v.jp} (${v.rom})</button>`;
+          let display = getDisplayText(v, 'verb');
+          html += `<button data-select-verb='${JSON.stringify(v)}' class="option-btn">${display}</button>`;
         });
         html += `</div>`;
-      } else if (state.step === 3) {
-        let verb = state.selectedVerb;
+      } else if (s.step === 3) {
+        let verb = s.selectedVerb;
         if (verb && verb.type === 'motion') {
           LOCATIONS.forEach(loc => {
-            html += `<button data-select-location='${JSON.stringify(loc)}' class="option-btn">${loc.jp} (${loc.rom})</button>`;
+            let display = getDisplayText(loc, 'location');
+            html += `<button data-select-location='${JSON.stringify(loc)}' class="option-btn">${display}</button>`;
           });
         } else {
           NOUNS.forEach(n => {
-            html += `<button data-select-object='${JSON.stringify(n)}' class="option-btn">${n.jp} (${n.rom})</button>`;
+            let display = getDisplayText(n, 'noun');
+            html += `<button data-select-object='${JSON.stringify(n)}' class="option-btn">${display}</button>`;
           });
         }
         html += `</div>`;
-      } else if (state.step === 4) {
-        html += `<button data-sent-type="affirmative" class="option-btn">✔ 肯定</button>`;
-        html += `<button data-sent-type="negative" class="option-btn">✘ 否定</button>`;
-        html += `<button data-sent-type="interrogative" class="option-btn">❔ 疑問</button></div>`;
+      } else if (s.step === 4) {
+        html += `<button data-sent-type="affirmative" class="option-btn">✔ ${langMode === 'en' ? 'Affirmative' : '肯定'}</button>`;
+        html += `<button data-sent-type="negative" class="option-btn">✘ ${langMode === 'en' ? 'Negative' : '否定'}</button>`;
+        html += `<button data-sent-type="interrogative" class="option-btn">❔ ${langMode === 'en' ? 'Question' : '疑問'}</button></div>`;
       }
     }
-    else if (state.pattern === 'questionWord') {
-      if (state.step === 2) {
+    else if (s.pattern === 'questionWord') {
+      if (s.step === 2) {
         QUESTION_WORDS.forEach(q => {
-          html += `<button data-select-qw='${JSON.stringify(q)}' class="option-btn">${q.jp} (${q.rom})</button>`;
+          let display = getDisplayText(q, 'qw');
+          html += `<button data-select-qw='${JSON.stringify(q)}' class="option-btn">${display}</button>`;
         });
         html += `</div>`;
-      } else if (state.step === 3) {
-        html += `<button data-qw-part="verb" class="option-btn">➕ 動詞を使う (with verb)</button>`;
-        html += `<button data-qw-part="nounadj" class="option-btn">📚 名詞/形容詞 (noun/adj)</button></div>`;
-      } else if (state.step === 4 && state.needVerbForQW) {
+      } else if (s.step === 3) {
+        html += `<button data-qw-part="verb" class="option-btn">➕ ${langMode === 'en' ? 'Use verb' : '動詞を使う'}</button>`;
+        html += `<button data-qw-part="nounadj" class="option-btn">📚 ${langMode === 'en' ? 'Noun/Adjective' : '名詞/形容詞'}</button></div>`;
+      } else if (s.step === 4 && s.needVerbForQW) {
         VERBS.forEach(v => {
-          html += `<button data-select-qv='${JSON.stringify(v)}' class="option-btn">${v.jp} (${v.rom})</button>`;
+          let display = getDisplayText(v, 'verb');
+          html += `<button data-select-qv='${JSON.stringify(v)}' class="option-btn">${display}</button>`;
         });
         html += `</div>`;
-      } else if (state.step === 4 && !state.needVerbForQW) {
+      } else if (s.step === 4 && !s.needVerbForQW) {
         ADJECTIVES.forEach(a => {
-          html += `<button data-select-qna='${JSON.stringify(a)}' type="adj" class="option-btn">${a.jp} (adj)</button>`;
+          let display = getDisplayText(a, 'adj');
+          html += `<button data-select-qna='${JSON.stringify(a)}' class="option-btn" data-type="adj">${display}</button>`;
         });
         NOUNS.forEach(n => {
-          html += `<button data-select-qna='${JSON.stringify(n)}' type="noun" class="option-btn">${n.jp} (noun)</button>`;
+          let display = getDisplayText(n, 'noun');
+          html += `<button data-select-qna='${JSON.stringify(n)}' class="option-btn" data-type="noun">${display}</button>`;
         });
         html += `</div>`;
-      } else if (state.step === 5) {
-        html += `<button data-sent-type="affirmative" class="option-btn">✅ 肯定</button>`;
-        html += `<button data-sent-type="negative" class="option-btn">❌ 否定</button>`;
-        html += `<button data-sent-type="interrogative" class="option-btn">❓ 疑問(か)</button></div>`;
+      } else if (s.step === 5) {
+        html += `<button data-sent-type="affirmative" class="option-btn">✅ ${langMode === 'en' ? 'Affirmative' : '肯定'}</button>`;
+        html += `<button data-sent-type="negative" class="option-btn">❌ ${langMode === 'en' ? 'Negative' : '否定'}</button>`;
+        html += `<button data-sent-type="interrogative" class="option-btn">❓ ${langMode === 'en' ? 'Interrogative' : '疑問'}</button></div>`;
       }
     }
+
     dynamicPanel.innerHTML = html;
     attachPanelEvents();
     updateSentenceDisplay();
@@ -574,34 +594,27 @@
     document.querySelectorAll('[data-action]').forEach(btn => {
       btn.onclick = () => {
         let act = btn.dataset.action;
-        if (act === 'pattern_copula') { currentState.pattern = 'copula'; currentState.step = 1; navStack.push({...currentState}); renderUI(); }
-        if (act === 'pattern_verb') { currentState.pattern = 'verbObj'; currentState.step = 1; navStack.push({...currentState}); renderUI(); }
-        if (act === 'pattern_qw') { currentState.pattern = 'questionWord'; currentState.step = 1; navStack.push({...currentState}); renderUI(); }
+        if (act === 'pattern_copula') { currentState = {...currentState, pattern: 'copula', step: 1}; renderUI(); }
+        if (act === 'pattern_verb') { currentState = {...currentState, pattern: 'verbObj', step: 1}; renderUI(); }
+        if (act === 'pattern_qw') { currentState = {...currentState, pattern: 'questionWord', step: 1}; renderUI(); }
       };
     });
     document.querySelectorAll('[data-select="pronoun"]').forEach(btn => {
       btn.onclick = () => {
-        let jp = btn.dataset.jp, rom = btn.dataset.rom, particle = btn.dataset.particle;
-        currentState.selectedPronoun = { jp, rom, particle };
+        let jp = btn.dataset.jp, rom = btn.dataset.rom, en = btn.dataset.en, particle = btn.dataset.particle;
+        currentState.selectedPronoun = { jp, rom, en, particle };
         currentState.step = 2;
-        if (currentState.pattern === 'copula') { currentState.copulaMode = null; renderUI(); }
-        else if (currentState.pattern === 'verbObj') { renderUI(); }
-        else if (currentState.pattern === 'questionWord') { renderUI(); }
-        else renderUI();
-      };
-    });
-    document.querySelectorAll('[data-copula-type]').forEach(btn => {
-      btn.onclick = () => {
-        currentState.copulaMode = btn.dataset.copulaType;
-        currentState.step = 3;
         renderUI();
       };
     });
+    document.querySelectorAll('[data-copula-type]').forEach(btn => {
+      btn.onclick = () => { currentState.copulaMode = btn.dataset.copulaType; currentState.step = 3; renderUI(); };
+    });
     document.querySelectorAll('[data-select-adj]').forEach(btn => {
-      btn.onclick = () => { currentState.selectedAdjective = { jp: btn.dataset.selectAdj, rom: btn.dataset.rom }; currentState.step = 4; renderUI(); };
+      btn.onclick = () => { currentState.selectedAdjective = { jp: btn.dataset.selectAdj, rom: btn.dataset.rom, en: btn.dataset.en }; currentState.step = 4; renderUI(); };
     });
     document.querySelectorAll('[data-select-noun]').forEach(btn => {
-      btn.onclick = () => { currentState.selectedCopulaNoun = { jp: btn.dataset.selectNoun, rom: btn.dataset.rom }; currentState.step = 4; renderUI(); };
+      btn.onclick = () => { currentState.selectedCopulaNoun = { jp: btn.dataset.selectNoun, rom: btn.dataset.rom, en: btn.dataset.en }; currentState.step = 4; renderUI(); };
     });
     document.querySelectorAll('[data-select-verb]').forEach(btn => {
       btn.onclick = () => { let v = JSON.parse(btn.dataset.selectVerb); currentState.selectedVerb = v; currentState.step = 3; renderUI(); };
@@ -631,26 +644,28 @@
     if (backBtn) backBtn.onclick = () => { if(currentState.step > 0) currentState.step--; renderUI(); };
   }
 
-  function resetState() { currentState = { step:0, pattern:null, selectedPronoun:null, sentenceType:'affirmative' }; renderUI(); }
+  function resetState() {
+    currentState = { step:0, pattern:null, selectedPronoun:null, sentenceType:'affirmative' };
+    renderUI();
+  }
 
-  // theme & i18n
+  // 言語切り替え
+  document.getElementById('langToggleBtn').onclick = () => {
+    langMode = (langMode === 'ja' ? 'en' : 'ja');
+    renderUI();
+  };
   document.getElementById('themeToggleBtn').onclick = () => {
     darkTheme = !darkTheme;
     document.body.classList.toggle('dark', darkTheme);
   };
-  document.getElementById('langToggleBtn').onclick = () => { alert("Interface bilingual: buttons show both JP/EN"); };
-  speakButton.onclick = () => { let txt = jpSentenceSpan.innerText; if(txt && !txt.includes("👈")) speakJapaneseSentence(txt); };
+  speakButton.onclick = () => { let txt = jpSentenceSpan.innerText; if(txt && !txt.includes("👈") && !txt.includes("Select")) speakJapaneseSentence(txt); };
   document.body.classList.add('dark');
   resetState();
 
-  // ---------- Service Worker 登録 (PWA) ----------
+  // Service Worker 登録 (PWA)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').then(reg => {
-        console.log('Service Worker registered: ', reg);
-      }).catch(err => {
-        console.log('SW registration failed: ', err);
-      });
+      navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered', reg)).catch(err => console.log('SW error', err));
     });
   }
 </script>
