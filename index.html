@@ -16,7 +16,6 @@
       padding: 0;
       transition: background-color 0.2s, color 0.2s;
     }
-
     body {
       font-family: system-ui, 'Segoe UI', 'Noto Sans JP', sans-serif;
       background: #f5f5f7;
@@ -24,17 +23,14 @@
       padding: 0 1rem 2rem;
       min-height: 100vh;
     }
-
     body.dark {
       background: #12121a;
       color: #eef2ff;
     }
-
     .app-container {
       max-width: 700px;
       margin: 0 auto;
     }
-
     .app-header {
       padding: 1rem 0 0.5rem;
       display: flex;
@@ -66,14 +62,12 @@
       font-weight: 500;
       cursor: pointer;
       font-size: 0.9rem;
-      transition: 0.1s;
     }
     body.dark .icon-btn {
       background: #2a2a3c;
       color: #ffd966;
     }
     .icon-btn:active { transform: scale(0.96); }
-
     .builder-panel {
       background: rgba(255,255,245,0.95);
       border-radius: 2rem;
@@ -85,7 +79,6 @@
       background: #1e1e2c;
       box-shadow: 0 8px 20px rgba(0,0,0,0.4);
     }
-
     .sentence-area {
       background: #fff0dd;
       padding: 1rem;
@@ -119,7 +112,6 @@
       font-weight: bold;
     }
     body.dark .speech-btn { background: #cc7b2e; color: white; }
-
     .buttons-grid {
       display: flex;
       flex-wrap: wrap;
@@ -135,7 +127,7 @@
       font-size: 1rem;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.1s;
+      transition: 0.1s;
       box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       color: #1e1e2f;
     }
@@ -150,7 +142,6 @@
       margin-right: auto;
     }
     body.dark .back-btn { background: #4a4a60; color: white; }
-
     .app-footer {
       text-align: center;
       padding: 1.5rem 0 0.5rem;
@@ -199,7 +190,7 @@
       <button id="speakBtn" class="speech-btn">🔊 音声を聞く / Listen</button>
     </div>
     <div class="feature-row">
-      <img src="https://placehold.co/400x120/FFF3E0/FF8C42?text=Learn+Japanese+with+buttons" alt="Japanese learning illustration" class="demo-img">
+      <img src="https://placehold.co/400x120/FFF3E0/FF8C42?text=Learn+Japanese+with+buttons" alt="Japanese learning" class="demo-img">
     </div>
   </main>
 
@@ -210,14 +201,25 @@
 </div>
 
 <script>
-  // ---------- データ定義 (日本語 + 英語 + ローマ字) ----------
-  const PRONOUNS = [
+  // --------------------------------------------------------------
+  // データ定義：人称代名詞 + 指示代名詞 (これ, それ, あれ)
+  // --------------------------------------------------------------
+  const PERSONAL_PRONOUNS = [
     { jp: "わたし", rom: "watashi", en: "I", particle: "は" },
     { jp: "あなた", rom: "anata", en: "you", particle: "は" },
     { jp: "かれ", rom: "kare", en: "he", particle: "は" },
     { jp: "かのじょ", rom: "kanojo", en: "she", particle: "は" },
     { jp: "わたしたち", rom: "watashitachi", en: "we", particle: "は" }
   ];
+
+  const DEMONSTRATIVES = [
+    { jp: "これ", rom: "kore", en: "this", particle: "は" },
+    { jp: "それ", rom: "sore", en: "that", particle: "は" },
+    { jp: "あれ", rom: "are", en: "that over there", particle: "は" }
+  ];
+
+  // 結合して一覧（主語になるもの）
+  const TOPICS = [...PERSONAL_PRONOUNS, ...DEMONSTRATIVES];
 
   const NOUNS = [
     { jp: "りんご", rom: "ringo", en: "apple" }, { jp: "すし", rom: "sushi", en: "sushi" }, { jp: "みず", rom: "mizu", en: "water" },
@@ -265,7 +267,7 @@
   let currentState = {
     step: 0,
     pattern: null,
-    selectedPronoun: null,
+    selectedTopic: null,
     selectedVerb: null,
     selectedObjectNoun: null,
     selectedLocation: null,
@@ -276,9 +278,10 @@
     needVerbForQW: false,
     verbChosenForQW: null,
     nounAdjForQW: null,
+    copulaOnlyForQW: false,   // 新設: 疑問詞 + だけ (例: これは何ですか)
     copulaMode: null
   };
-  let langMode = 'en';   // 'en' または 'ja'  初期は英語モード
+  let langMode = 'en';
   let darkTheme = true;
 
   const dynamicPanel = document.getElementById('dynamicPanel');
@@ -288,7 +291,6 @@
   const appTitle = document.getElementById('appTitle');
   const pageTitle = document.getElementById('pageTitle');
 
-  // タイトルの更新
   function updateTitles() {
     if (langMode === 'en') {
       appTitle.textContent = '📖 NIHONGO Builder';
@@ -299,7 +301,6 @@
     }
   }
 
-  // ---------- ヘルパー: 表示用テキスト取得 (言語・項目に応じて) ----------
   function getDisplayText(item, type, particle = null) {
     if (!item) return "";
     if (langMode === 'en') {
@@ -313,15 +314,14 @@
     }
   }
 
-  function getPronounDisplay(pronoun) {
+  function getTopicDisplay(topic) {
     if (langMode === 'en') {
-      return `${pronoun.en} (${pronoun.jp}-${pronoun.particle === "は" ? "wa" : pronoun.particle})`;
+      return `${topic.en} (${topic.jp}-${topic.particle === "は" ? "wa" : topic.particle})`;
     } else {
-      return `${pronoun.jp}-${pronoun.particle} (${pronoun.rom}-${pronoun.particle === "は" ? "wa" : pronoun.particle})`;
+      return `${topic.jp}-${topic.particle} (${topic.rom}-${topic.particle === "は" ? "wa" : topic.particle})`;
     }
   }
 
-  // 読み上げ用ヘルパー
   function convertParticlesForSpeech(text) {
     return text.replace(/([^\s]+)は/g, (match, p1) => p1 + 'わ')
                .replace(/([^\s]+)へ/g, (match, p1) => p1 + 'え');
@@ -336,17 +336,17 @@
     window.speechSynthesis.speak(utterance);
   }
 
-  // 文生成 (日本語文とローマ字文)
+  // 文生成 (コア)
   function buildCurrentSentence() {
     let jp = "", rom = "";
     const s = currentState;
     if (!s.pattern) return { jp: langMode === 'en' ? "👈 Choose sentence pattern" : "👈 文の型を選んでね", rom: "Select type first" };
-    if (!s.selectedPronoun) return { jp: langMode === 'en' ? "📌 Select a pronoun first" : "📌 代名詞を選んでください", rom: "Choose pronoun" };
-    const pronoun = s.selectedPronoun;
-    const pronounPart = `${pronoun.jp}-${pronoun.particle}`;
-    const pronounRom = `${pronoun.rom}-${pronoun.particle === "は" ? "wa" : pronoun.particle}`;
+    if (!s.selectedTopic) return { jp: langMode === 'en' ? "📌 Select a topic (pronoun/demonstrative)" : "📌 話題（代名詞/指示詞）を選んでください", rom: "Choose topic" };
+    const topic = s.selectedTopic;
+    const topicPart = `${topic.jp}-${topic.particle}`;
+    const topicRom = `${topic.rom}-${topic.particle === "は" ? "wa" : topic.particle}`;
 
-    // Copula 文
+    // コピュラ文
     if (s.pattern === 'copula') {
       let predicate = "", predRom = "", isAdj = false;
       if (s.selectedAdjective) {
@@ -365,27 +365,27 @@
           if (adj === "いい") { stem = "よ"; romStem = "yo"; }
           adj = stem + "くない";
           adjRom = romStem + "kunai";
-          jp = `${pronounPart} ${adj} です`;
-          rom = `${pronounRom} ${adjRom} desu`;
+          jp = `${topicPart} ${adj} です`;
+          rom = `${topicRom} ${adjRom} desu`;
         } else if (s.sentenceType === 'interrogative') {
-          jp = `${pronounPart} ${adj} ですか`;
-          rom = `${pronounRom} ${adjRom} desu ka`;
+          jp = `${topicPart} ${adj} ですか`;
+          rom = `${topicRom} ${adjRom} desu ka`;
         } else {
-          jp = `${pronounPart} ${adj} です`;
-          rom = `${pronounRom} ${adjRom} desu`;
+          jp = `${topicPart} ${adj} です`;
+          rom = `${topicRom} ${adjRom} desu`;
         }
         return { jp, rom };
       } else {
         let noun = predicate, nounRom = predRom;
         if (s.sentenceType === 'negative') {
-          jp = `${pronounPart} ${noun} じゃないです`;
-          rom = `${pronounRom} ${nounRom} janai desu`;
+          jp = `${topicPart} ${noun} じゃないです`;
+          rom = `${topicRom} ${nounRom} janai desu`;
         } else if (s.sentenceType === 'interrogative') {
-          jp = `${pronounPart} ${noun} ですか`;
-          rom = `${pronounRom} ${nounRom} desu ka`;
+          jp = `${topicPart} ${noun} ですか`;
+          rom = `${topicRom} ${nounRom} desu ka`;
         } else {
-          jp = `${pronounPart} ${noun} です`;
-          rom = `${pronounRom} ${nounRom} desu`;
+          jp = `${topicPart} ${noun} です`;
+          rom = `${topicRom} ${nounRom} desu`;
         }
         return { jp, rom };
       }
@@ -419,18 +419,42 @@
         verbForm = verb.baseMasu;
         verbFormRom = verb.baseMasuRom;
       }
-      jp = `${pronounPart} ${objectPart} ${verbForm}`;
-      rom = `${pronounRom} ${objectRom} ${verbFormRom}`;
+      jp = `${topicPart} ${objectPart} ${verbForm}`;
+      rom = `${topicRom} ${objectRom} ${verbFormRom}`;
       return { jp, rom };
     }
 
-    // 疑問詞文
+    // 疑問詞文（拡張：コピュラのみ対応）
     if (s.pattern === 'questionWord') {
       const qw = s.selectedQuestionWord;
       if (!qw) return { jp: langMode === 'en' ? "Choose question word" : "疑問詞を選んで", rom: "Select question word" };
+      
+      // パターンA: 疑問詞 + だけ (です/ですか)
+      if (s.copulaOnlyForQW) {
+        let copula = "";
+        let copulaRom = "";
+        if (s.sentenceType === 'interrogative') {
+          copula = "ですか";
+          copulaRom = "desu ka";
+        } else if (s.sentenceType === 'negative') {
+          copula = "じゃないです";
+          copulaRom = "janai desu";
+        } else {
+          copula = "です";
+          copulaRom = "desu";
+        }
+        // 疑問詞に助詞を付けない（何ですか？　どこですか？ など）
+        let qwDisplay = qw.jp;
+        let qwRom = qw.rom;
+        jp = `${topicPart} ${qwDisplay} ${copula}`;
+        rom = `${topicRom} ${qwRom} ${copulaRom}`;
+        return { jp, rom };
+      }
+      
+      // パターンB: 動詞を使う または 名詞/形容詞を使う
       let hasVerb = s.verbChosenForQW;
       let hasNounAdj = s.nounAdjForQW;
-      if (!hasVerb && !hasNounAdj) return { jp: langMode === 'en' ? "Choose verb or adj/noun" : "動詞か形容詞/名詞を選んで", rom: "Select predicate" };
+      if (!hasVerb && !hasNounAdj) return { jp: langMode === 'en' ? "Choose verb, adj/noun, or copula-only" : "動詞／形容詞・名詞／コピュラのみを選んで", rom: "Select predicate" };
       let predPart = "", predRom = "";
       let particle = "";
       if (hasVerb) {
@@ -476,8 +500,8 @@
       }
       const qwDisplay = `${qw.jp}${particle ? `-${particle}` : ''}`;
       const qwRom = `${qw.rom}${particle ? `-${particle === "へ" ? "e" : particle}` : ''}`;
-      jp = `${pronounPart} ${qwDisplay} ${predPart}`;
-      rom = `${pronounRom} ${qwRom} ${predRom}`;
+      jp = `${topicPart} ${qwDisplay} ${predPart}`;
+      rom = `${topicRom} ${qwRom} ${predRom}`;
       return { jp, rom };
     }
     return { jp: "Error", rom: "Error" };
@@ -489,7 +513,7 @@
     romajiSentenceSpan.innerText = rom;
   }
 
-  // ---------- UI レンダリング (英語対応版) ----------
+  // UI レンダリング
   function renderUI() {
     let html = `<div class="buttons-grid"><button id="backBtn" class="option-btn back-btn">🔙 ${langMode === 'en' ? 'Back' : '戻る'}</button>`;
     const s = currentState;
@@ -501,9 +525,9 @@
       html += `</div>`;
     }
     else if (s.step === 1) {
-      PRONOUNS.forEach(p => {
-        let display = getPronounDisplay(p);
-        html += `<button data-select="pronoun" data-jp="${p.jp}" data-rom="${p.rom}" data-en="${p.en}" data-particle="${p.particle}" class="option-btn">${display}</button>`;
+      TOPICS.forEach(t => {
+        let display = getTopicDisplay(t);
+        html += `<button data-select-topic='${JSON.stringify(t)}' class="option-btn">${display}</button>`;
       });
       html += `</div>`;
     }
@@ -513,14 +537,12 @@
         html += `<button data-copula-type="noun" class="option-btn">📙 ${langMode === 'en' ? 'Noun' : '名詞'}</button></div>`;
       } else if (s.step === 3 && s.copulaMode === 'adj') {
         ADJECTIVES.forEach(a => {
-          let display = getDisplayText(a, 'adj');
-          html += `<button data-select-adj="${a.jp}" data-rom="${a.rom}" data-en="${a.en}" class="option-btn">${display}</button>`;
+          html += `<button data-select-adj="${a.jp}" data-rom="${a.rom}" data-en="${a.en}" class="option-btn">${getDisplayText(a, 'adj')}</button>`;
         });
         html += `</div>`;
       } else if (s.step === 3 && s.copulaMode === 'noun') {
         NOUNS.forEach(n => {
-          let display = getDisplayText(n, 'noun');
-          html += `<button data-select-noun="${n.jp}" data-rom="${n.rom}" data-en="${n.en}" class="option-btn">${display}</button>`;
+          html += `<button data-select-noun="${n.jp}" data-rom="${n.rom}" data-en="${n.en}" class="option-btn">${getDisplayText(n, 'noun')}</button>`;
         });
         html += `</div>`;
       } else if (s.step === 4) {
@@ -532,21 +554,18 @@
     else if (s.pattern === 'verbObj') {
       if (s.step === 2) {
         VERBS.forEach(v => {
-          let display = getDisplayText(v, 'verb');
-          html += `<button data-select-verb='${JSON.stringify(v)}' class="option-btn">${display}</button>`;
+          html += `<button data-select-verb='${JSON.stringify(v)}' class="option-btn">${getDisplayText(v, 'verb')}</button>`;
         });
         html += `</div>`;
       } else if (s.step === 3) {
         let verb = s.selectedVerb;
         if (verb && verb.type === 'motion') {
           LOCATIONS.forEach(loc => {
-            let display = getDisplayText(loc, 'location');
-            html += `<button data-select-location='${JSON.stringify(loc)}' class="option-btn">${display}</button>`;
+            html += `<button data-select-location='${JSON.stringify(loc)}' class="option-btn">${getDisplayText(loc, 'location')}</button>`;
           });
         } else {
           NOUNS.forEach(n => {
-            let display = getDisplayText(n, 'noun');
-            html += `<button data-select-object='${JSON.stringify(n)}' class="option-btn">${display}</button>`;
+            html += `<button data-select-object='${JSON.stringify(n)}' class="option-btn">${getDisplayText(n, 'noun')}</button>`;
           });
         }
         html += `</div>`;
@@ -559,36 +578,37 @@
     else if (s.pattern === 'questionWord') {
       if (s.step === 2) {
         QUESTION_WORDS.forEach(q => {
-          let display = getDisplayText(q, 'qw');
-          html += `<button data-select-qw='${JSON.stringify(q)}' class="option-btn">${display}</button>`;
+          html += `<button data-select-qw='${JSON.stringify(q)}' class="option-btn">${getDisplayText(q, 'qw')}</button>`;
         });
         html += `</div>`;
       } else if (s.step === 3) {
         html += `<button data-qw-part="verb" class="option-btn">➕ ${langMode === 'en' ? 'Use verb' : '動詞を使う'}</button>`;
-        html += `<button data-qw-part="nounadj" class="option-btn">📚 ${langMode === 'en' ? 'Noun/Adjective' : '名詞/形容詞'}</button></div>`;
+        html += `<button data-qw-part="nounadj" class="option-btn">📚 ${langMode === 'en' ? 'Noun/Adjective' : '名詞/形容詞'}</button>`;
+        html += `<button data-qw-part="copula" class="option-btn">❓ ${langMode === 'en' ? 'Copula only (です/ですか)' : 'コピュラのみ (です/ですか)'}</button></div>`;
       } else if (s.step === 4 && s.needVerbForQW) {
         VERBS.forEach(v => {
-          let display = getDisplayText(v, 'verb');
-          html += `<button data-select-qv='${JSON.stringify(v)}' class="option-btn">${display}</button>`;
+          html += `<button data-select-qv='${JSON.stringify(v)}' class="option-btn">${getDisplayText(v, 'verb')}</button>`;
         });
         html += `</div>`;
-      } else if (s.step === 4 && !s.needVerbForQW) {
+      } else if (s.step === 4 && !s.needVerbForQW && !s.copulaOnlyForQW) {
         ADJECTIVES.forEach(a => {
-          let display = getDisplayText(a, 'adj');
-          html += `<button data-select-qna='${JSON.stringify(a)}' class="option-btn" data-type="adj">${display}</button>`;
+          html += `<button data-select-qna='${JSON.stringify(a)}' class="option-btn" data-type="adj">${getDisplayText(a, 'adj')}</button>`;
         });
         NOUNS.forEach(n => {
-          let display = getDisplayText(n, 'noun');
-          html += `<button data-select-qna='${JSON.stringify(n)}' class="option-btn" data-type="noun">${display}</button>`;
+          html += `<button data-select-qna='${JSON.stringify(n)}' class="option-btn" data-type="noun">${getDisplayText(n, 'noun')}</button>`;
         });
         html += `</div>`;
+      } else if (s.step === 4 && s.copulaOnlyForQW) {
+        // コピュラのみの場合、直接肯定/否定/疑問の選択へ
+        s.step = 5; // 強制的に進める
+        renderUI();
+        return;
       } else if (s.step === 5) {
         html += `<button data-sent-type="affirmative" class="option-btn">✅ ${langMode === 'en' ? 'Affirmative' : '肯定'}</button>`;
         html += `<button data-sent-type="negative" class="option-btn">❌ ${langMode === 'en' ? 'Negative' : '否定'}</button>`;
         html += `<button data-sent-type="interrogative" class="option-btn">❓ ${langMode === 'en' ? 'Interrogative' : '疑問'}</button></div>`;
       }
     }
-
     dynamicPanel.innerHTML = html;
     attachPanelEvents();
     updateSentenceDisplay();
@@ -598,15 +618,15 @@
     document.querySelectorAll('[data-action]').forEach(btn => {
       btn.onclick = () => {
         let act = btn.dataset.action;
-        if (act === 'pattern_copula') { currentState = {...currentState, pattern: 'copula', step: 1}; renderUI(); }
-        if (act === 'pattern_verb') { currentState = {...currentState, pattern: 'verbObj', step: 1}; renderUI(); }
-        if (act === 'pattern_qw') { currentState = {...currentState, pattern: 'questionWord', step: 1}; renderUI(); }
+        if (act === 'pattern_copula') { resetToPattern('copula'); }
+        if (act === 'pattern_verb') { resetToPattern('verbObj'); }
+        if (act === 'pattern_qw') { resetToPattern('questionWord'); }
       };
     });
-    document.querySelectorAll('[data-select="pronoun"]').forEach(btn => {
+    document.querySelectorAll('[data-select-topic]').forEach(btn => {
       btn.onclick = () => {
-        let jp = btn.dataset.jp, rom = btn.dataset.rom, en = btn.dataset.en, particle = btn.dataset.particle;
-        currentState.selectedPronoun = { jp, rom, en, particle };
+        let topic = JSON.parse(btn.dataset.selectTopic);
+        currentState.selectedTopic = topic;
         currentState.step = 2;
         renderUI();
       };
@@ -636,7 +656,29 @@
       btn.onclick = () => { currentState.selectedQuestionWord = JSON.parse(btn.dataset.selectQw); currentState.step = 3; renderUI(); };
     });
     document.querySelectorAll('[data-qw-part]').forEach(btn => {
-      btn.onclick = () => { let useVerb = (btn.dataset.qwPart === 'verb'); currentState.needVerbForQW = useVerb; currentState.step = 4; renderUI(); };
+      btn.onclick = () => {
+        let part = btn.dataset.qwPart;
+        if (part === 'verb') {
+          currentState.needVerbForQW = true;
+          currentState.copulaOnlyForQW = false;
+          currentState.nounAdjForQW = null;
+          currentState.verbChosenForQW = null;
+          currentState.step = 4;
+        } else if (part === 'nounadj') {
+          currentState.needVerbForQW = false;
+          currentState.copulaOnlyForQW = false;
+          currentState.verbChosenForQW = null;
+          currentState.nounAdjForQW = null;
+          currentState.step = 4;
+        } else if (part === 'copula') {
+          currentState.needVerbForQW = false;
+          currentState.copulaOnlyForQW = true;
+          currentState.verbChosenForQW = null;
+          currentState.nounAdjForQW = null;
+          currentState.step = 4; // 次へ進むが、renderUIで自動的にstep=5へ
+        }
+        renderUI();
+      };
     });
     document.querySelectorAll('[data-select-qv]').forEach(btn => {
       btn.onclick = () => { currentState.verbChosenForQW = JSON.parse(btn.dataset.selectQv); currentState.step = 5; renderUI(); };
@@ -648,12 +690,33 @@
     if (backBtn) backBtn.onclick = () => { if(currentState.step > 0) currentState.step--; renderUI(); };
   }
 
-  function resetState() {
-    currentState = { step:0, pattern:null, selectedPronoun:null, sentenceType:'affirmative' };
+  function resetToPattern(pattern) {
+    currentState = {
+      step: 1,
+      pattern: pattern,
+      selectedTopic: null,
+      selectedVerb: null,
+      selectedObjectNoun: null,
+      selectedLocation: null,
+      selectedAdjective: null,
+      selectedCopulaNoun: null,
+      selectedQuestionWord: null,
+      sentenceType: 'affirmative',
+      needVerbForQW: false,
+      verbChosenForQW: null,
+      nounAdjForQW: null,
+      copulaOnlyForQW: false,
+      copulaMode: null
+    };
     renderUI();
   }
 
-  // 言語切り替え (タイトルも更新)
+  function resetState() {
+    currentState = { step:0, pattern:null, selectedTopic:null, sentenceType:'affirmative' };
+    renderUI();
+  }
+
+  // イベント登録
   document.getElementById('langToggleBtn').onclick = () => {
     langMode = (langMode === 'ja' ? 'en' : 'ja');
     updateTitles();
@@ -665,15 +728,13 @@
   };
   speakButton.onclick = () => { let txt = jpSentenceSpan.innerText; if(txt && !txt.includes("👈") && !txt.includes("Select") && !txt.includes("選んで")) speakJapaneseSentence(txt); };
   
-  // 初期化
   document.body.classList.add('dark');
   updateTitles();
   resetState();
 
-  // Service Worker 登録 (PWA)
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').then(reg => console.log('SW registered', reg)).catch(err => console.log('SW error', err));
+      navigator.serviceWorker.register('sw.js').catch(err => console.log('SW error', err));
     });
   }
 </script>
